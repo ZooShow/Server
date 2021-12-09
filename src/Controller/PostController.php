@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\RespondService;
 use Exception;
 use App\Entity\User;
 use App\Repository\UserRepository;
@@ -16,24 +17,12 @@ use Nelmio\ApiDocBundle\Annotation\Security;
 
 class PostController extends AbstractController
 {
-    /**
-     * @OA\Response(
-     *     response=200,
-     *     description="Returns the rewards of an user",
-     *     @OA\JsonContent(
-     *        type="array",
-     *        @OA\Items(ref=@Model(type=User::class))
-     *     )
-     * )
-     * @OA\Parameter(
-     *     name="order",
-     *     in="query",
-     *     description="The field used to order rewards",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Tag(name="rewards")
-     * @Security(name="Bearer")
-     */
+    private RespondService $respondService;
+
+    public function __construct(RespondService $respondService){
+        $this->respondService = $respondService;
+    }
+
     #[Route('/post/getAllPostByUser/{id}', name: 'get_all_post_by_user', methods: ['GET'])]
     public function getAllPostByUser($id, PostRepository $postRepository, UserRepository $userRepository): Response
     {
@@ -44,7 +33,7 @@ class PostController extends AbstractController
                     'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
                     'errors' => "User not found",
                 ];
-                return $this->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
+                return $this->respondService->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
             }
             $posts = $postRepository->findBy(["user" => $user]);
             $postMas = array();
@@ -62,12 +51,7 @@ class PostController extends AbstractController
                 'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'errors' => "Data no valid",
             ];
-            return $this->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->respondService->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-    }
-
-    public function response($data, $status = Response::HTTP_OK, $headers = []): JsonResponse
-    {
-        return new JsonResponse($data, $status, $headers);
     }
 }

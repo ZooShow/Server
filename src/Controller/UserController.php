@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\RespondService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,10 +14,16 @@ use App\Entity\User;
 use App\Entity\Post;
 use App\Repository\PostRepository;
 
-
+#[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
-    #[Route('/user/add', name: 'user_add', methods: ['POST'])]
+    private RespondService $respondService;
+
+    public function __construct(RespondService $respondService){
+        $this->respondService = $respondService;
+    }
+
+    #[Route(name: 'add', methods: ['POST'])]
     public function addUser(Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
         try{
@@ -35,13 +42,13 @@ class UserController extends AbstractController
                 "status"=>Response::HTTP_OK,
                 "success"=>"User added successfully"
             ];
-            return $this->response($data);
+            return $this->respondService->response($data);
         } catch (Exception){
             $data = [
                 "status"=>Response::HTTP_UNPROCESSABLE_ENTITY,
                 "errors"=>"Data no valid"
             ];
-            return $this->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->respondService->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -69,7 +76,7 @@ class UserController extends AbstractController
                 'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
                 'errors' => "Data no valid",
             ];
-            return $this->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->respondService->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
     }

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use OpenApi\Annotations as OA;
@@ -15,7 +16,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
  * @ORM\Table(name="`user`")
  * @UniqueEntity(fields={"login"}, message="There is already an account with this login")
  */
-class User implements PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
      * @ORM\Id
@@ -41,7 +42,7 @@ class User implements PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string", length=255)
      * @Model(type=User::class)
      */
-    private $Name;
+    private $name;
 
     public function getId(): ?int
     {
@@ -55,7 +56,7 @@ class User implements PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->login;
+        return $this->login;
     }
 
     /**
@@ -107,4 +108,31 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Returning a salt is only needed, if you are not using a modern
+     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
+     *
+     * @see UserInterface
+     */
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        return ["ROLE_USER"];
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
 }
